@@ -8,12 +8,19 @@ import (
 
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/middleware"
+	"golang.org/x/net/context"
 )
 
 func Router() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.NoCache)
-	r.Handle("/vars", expVars)
+
+	r.Get("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, r.RequestURI+"/pprof/", 301)
+	})
+	r.Handle("/pprof", func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, r.RequestURI+"/", 301)
+	})
 	r.Handle("/pprof/", pprof.Index)
 	r.Handle("/pprof/cmdline", pprof.Cmdline)
 	r.Handle("/pprof/profile", pprof.Profile)
@@ -22,6 +29,8 @@ func Router() http.Handler {
 	r.Handle("/pprof/heap", pprof.Handler("heap").ServeHTTP)
 	r.Handle("/pprof/goroutine", pprof.Handler("goroutine").ServeHTTP)
 	r.Handle("/pprof/threadcreate", pprof.Handler("threadcreate").ServeHTTP)
+	r.Handle("/vars", expVars)
+
 	return r
 }
 
